@@ -1,58 +1,58 @@
 # Development Setup Guide
 
-Tento návod ti ukáže, jak nastavit lokální vývoj pluginu codex.nvim pro debugging a testování.
+This guide shows how to set up local development for codex.nvim for debugging and testing.
 
-## 🔧 Lokální Setup
+## 🔧 Local Setup
 
-### Metoda 1: Symlink do runtime path
+### Method 1: Symlink to runtime path
 
-Nejjednodušší způsob pro vývoj je vytvořit symlink:
+The simplest way for development is to create a symlink:
 
 ```bash
-# Vytvoř symlink v Neovim runtime path
+# Create symlink in Neovim runtime path
 mkdir -p ~/.local/share/nvim/site/pack/dev/start
-ln -s ~/git/private/codex.nvim ~/.local/share/nvim/site/pack/dev/start/codex.nvim
+ln -s /path/to/your/codex.nvim ~/.local/share/nvim/site/pack/dev/start/codex.nvim
 
-# Restartuj Neovim
+# Restart Neovim
 ```
 
-### Metoda 2: Přidání do runtimepath v configu
+### Method 2: Add to runtimepath in config
 
-V tvém Neovim configu (např. `~/.config/nvim/init.lua` nebo pro claude-code.nvim: `~/git/private/tools/claude-code.nvim`):
+In your Neovim config (e.g. `~/.config/nvim/init.lua`):
 
 ```lua
--- Na začátek configu přidej:
-vim.opt.runtimepath:prepend('~/git/private/codex.nvim')
+-- Add at the beginning of your config:
+vim.opt.runtimepath:prepend('/path/to/your/codex.nvim')
 
--- Pak normálně setupuj plugin:
+-- Then setup the plugin normally:
 require('codex').setup({
-  -- tvoje konfigurace
+  -- your configuration
 })
 ```
 
-### Metoda 3: Lazy.nvim dev mode
+### Method 3: Lazy.nvim dev mode
 
-Pokud používáš lazy.nvim, můžeš použít dev mode:
+If you're using lazy.nvim, you can use dev mode:
 
 ```lua
 {
   'JanSmrcka/codex.nvim',
-  dir = '~/git/private/codex.nvim',  -- Použije lokální kopii
+  dir = '/path/to/your/codex.nvim',  -- Use local copy
   config = function()
     require('codex').setup({
-      -- tvoje konfigurace
+      -- your configuration
     })
   end,
 }
 ```
 
-### Metoda 4: Packer dev mode
+### Method 4: Packer dev mode
 
-Pro packer.nvim:
+For packer.nvim:
 
 ```lua
 use {
-  '~/git/private/codex.nvim',  -- Lokální cesta
+  '/path/to/your/codex.nvim',  -- Local path
   config = function()
     require('codex').setup()
   end
@@ -61,27 +61,27 @@ use {
 
 ## 🐛 Debugging
 
-### 1. Reload pluginu během vývoje
+### 1. Reload plugin during development
 
 ```lua
--- V Neovimu spusť:
+-- In Neovim run:
 :lua package.loaded['codex'] = nil
 :lua package.loaded['codex.terminal'] = nil
 :lua package.loaded['codex.config'] = nil
--- ... atd pro všechny moduly
+-- ... etc for all modules
 
--- Pak reload:
+-- Then reload:
 :lua require('codex').setup()
 ```
 
-### 2. Quick reload funkce
+### 2. Quick reload function
 
-Přidej si do configu helper funkci:
+Add a helper function to your config:
 
 ```lua
--- Přidej do init.lua
+-- Add to init.lua
 vim.api.nvim_create_user_command('CodexReload', function()
-  -- Unload všechny codex moduly
+  -- Unload all codex modules
   for name, _ in pairs(package.loaded) do
     if name:match('^codex') then
       package.loaded[name] = nil
@@ -90,117 +90,117 @@ vim.api.nvim_create_user_command('CodexReload', function()
 
   -- Reload plugin
   require('codex').setup({
-    -- tvoje konfigurace
+    -- your configuration
   })
 
   print('Codex plugin reloaded!')
 end, {})
 ```
 
-Potom stačí spustit: `:CodexReload`
+Then just run: `:CodexReload`
 
 ### 3. Debug logging
 
-Přidej do kódu debug výpisy:
+Add debug prints to the code:
 
 ```lua
--- V lua/codex/terminal.lua nebo jinde:
+-- In lua/codex/terminal.lua or elsewhere:
 print('DEBUG: bufnr =', bufnr)
 print('DEBUG: instance_id =', instance_id)
 vim.notify('Debug message', vim.log.levels.INFO)
 ```
 
-### 4. Kontrola stavu pluginu
+### 4. Check plugin state
 
 ```vim
-:CodexDebug                    " Zobrazí stav pluginu
-:lua =require('codex').codex   " Zobrazí interní stav
-:messages                       " Zobrazí všechny zprávy/errory
+:CodexDebug                    " Show plugin state
+:lua =require('codex').codex   " Show internal state
+:messages                       " Show all messages/errors
 ```
 
-## 🧪 Testování
+## 🧪 Testing
 
-### Ruční testování
+### Manual testing
 
 ```bash
-# Otevři Neovim s lokální verzí pluginu
-cd ~/git/private/codex.nvim
+# Open Neovim with local plugin version
+cd /path/to/your/codex.nvim
 nvim --cmd "set rtp+=." test.lua
 ```
 
-V Neovimu:
+In Neovim:
 
 ```vim
 " Setup plugin
 :lua require('codex').setup()
 
-" Test základní funkčnosti
+" Test basic functionality
 :Codex
 :CodexVersion
 :CodexDebug
 ```
 
-### Testování v izolovaném prostředí
+### Testing in isolated environment
 
 ```bash
-# Vytvoř minimální config pro testování
+# Create minimal config for testing
 cat > /tmp/test_config.lua << 'EOF'
--- Minimální config
-vim.opt.runtimepath:prepend('~/git/private/codex.nvim')
+-- Minimal config
+vim.opt.runtimepath:prepend('/path/to/your/codex.nvim')
 
 require('codex').setup({
   window = {
-    position = 'botright',
-    split_ratio = 0.3,
+    position = 'botright vertical',
+    split_ratio = 0.4,
   },
 })
 
 print('Codex loaded!')
 EOF
 
-# Spusť Neovim s tímto configem
+# Run Neovim with this config
 nvim -u /tmp/test_config.lua
 ```
 
-## 📝 Workflow pro vývoj
+## 📝 Development Workflow
 
-1. **Edituj kód** v `~/git/private/codex.nvim/lua/codex/`
-2. **Reload plugin** pomocí `:CodexReload`
-3. **Testuj změny** pomocí `:Codex` nebo jiných příkazů
-4. **Zkontroluj errory** pomocí `:messages`
-5. **Commit změny** když vše funguje
+1. **Edit code** in `lua/codex/`
+2. **Reload plugin** using `:CodexReload`
+3. **Test changes** using `:Codex` or other commands
+4. **Check errors** using `:messages`
+5. **Commit changes** when everything works
 
-## 🔍 Checklist pro debugging
+## 🔍 Debugging Checklist
 
-- [ ] Plugin se načítá? → `:lua =require('codex')`
-- [ ] Config je validní? → `:lua =require('codex').config`
-- [ ] Codex CLI funguje? → `:!codex --version`
-- [ ] Terminal se vytváří? → `:Codex`
-- [ ] Nejsou errory? → `:messages`
-- [ ] Buffery jsou validní? → `:CodexDebug`
+- [ ] Does plugin load? → `:lua =require('codex')`
+- [ ] Is config valid? → `:lua =require('codex').config`
+- [ ] Does Codex CLI work? → `:!codex --version`
+- [ ] Does terminal create? → `:Codex`
+- [ ] Any errors? → `:messages`
+- [ ] Are buffers valid? → `:CodexDebug`
 
-## 🚀 Quick Start pro debugging
+## 🚀 Quick Start for Debugging
 
 ```lua
--- Přidej do ~/git/private/tools/claude-code.nvim nebo kde máš svůj config:
+-- Add to your Neovim config:
 
--- 1. Přidej lokální plugin do runtimepath
-vim.opt.runtimepath:prepend('~/git/private/codex.nvim')
+-- 1. Add local plugin to runtimepath
+vim.opt.runtimepath:prepend('/path/to/your/codex.nvim')
 
--- 2. Setup s debug konfigurací
+-- 2. Setup with debug configuration
 require('codex').setup({
   window = {
-    position = 'botright',
-    split_ratio = 0.3,
+    position = 'botright vertical',
+    split_ratio = 0.4,
   },
   refresh = {
     enable = true,
-    show_notifications = true,  -- Zapni notifikace pro debugging
+    show_notifications = true,  -- Enable notifications for debugging
   },
-  command = 'codex',  -- Nebo 'echo' pro testování bez Codex CLI
+  command = 'codex',  -- Or 'echo' for testing without Codex CLI
 })
 
--- 3. Přidaj reload command
+-- 3. Add reload command
 vim.api.nvim_create_user_command('CodexReload', function()
   for name, _ in pairs(package.loaded) do
     if name:match('^codex') then
@@ -211,59 +211,99 @@ vim.api.nvim_create_user_command('CodexReload', function()
   print('Codex reloaded!')
 end, {})
 
--- 4. Keymapy pro rychlý přístup
+-- 4. Keymaps for quick access
 vim.keymap.set('n', '<leader>ct', '<cmd>Codex<cr>', { desc = 'Toggle Codex' })
 vim.keymap.set('n', '<leader>cd', '<cmd>CodexDebug<cr>', { desc = 'Codex Debug' })
 vim.keymap.set('n', '<leader>cr', '<cmd>CodexReload<cr>', { desc = 'Codex Reload' })
 ```
 
-## 💡 Tipy
+## 💡 Tips
 
-1. **Používej print() pro debugging** - Výpisy se zobrazí v `:messages`
-2. **Sleduj logy** - `:messages` je tvůj přítel
-3. **Testuj změny postupně** - Reload po každé změně
-4. **Git commit často** - Malé commity jsou lepší
-5. **Používaj `:CodexDebug`** - Zobrazí stav všech instancí
+1. **Use print() for debugging** - Output appears in `:messages`
+2. **Watch logs** - `:messages` is your friend
+3. **Test changes incrementally** - Reload after each change
+4. **Git commit often** - Small commits are better
+5. **Use `:CodexDebug`** - Shows state of all instances
 
-## 🆘 Časté problémy
+## 🆘 Common Issues
 
 ### "Module not found: codex"
 
 ```lua
--- Zkontroluj runtimepath:
+-- Check runtimepath:
 :lua =vim.opt.runtimepath:get()
 
--- Přidej cestu:
-:lua vim.opt.runtimepath:prepend('~/git/private/codex.nvim')
+-- Add path:
+:lua vim.opt.runtimepath:prepend('/path/to/your/codex.nvim')
 ```
 
 ### "E5108: Invalid argument"
 
-→ Toto už jsme opravili! Byla to deprecated Neovim API.
+→ This has been fixed! It was deprecated Neovim API.
 
-### Terminal se neotevře
+### Terminal doesn't open
 
 ```vim
-" Zkontroluj Codex CLI:
+" Check Codex CLI:
 :!which codex
 :!codex --version
 
-" Zkontroluj git root:
+" Check git root:
 :!git rev-parse --show-toplevel
 ```
 
-### Změny se neprojevují
+### Changes don't take effect
 
 ```vim
-" Reload všechny moduly:
+" Reload all modules:
 :CodexReload
 
-" Nebo restart Neovimu:
+" Or restart Neovim:
 :qa
+```
+
+## 🔧 Advanced Setup
+
+### Auto-reload on file save
+
+Add this to your config for automatic reloading:
+
+```lua
+vim.api.nvim_create_autocmd('BufWritePost', {
+  pattern = '*/lua/codex/*.lua',
+  callback = function()
+    vim.cmd('CodexReload')
+  end,
+})
+```
+
+### Debug with verbose output
+
+```lua
+require('codex').setup({
+  command_variants = {
+    verbose = {
+      enabled = true,
+      flags = '--verbose',
+    },
+  },
+})
+```
+
+Then use `:CodexVerbose` to see detailed output.
+
+### Test without Codex CLI
+
+For testing plugin functionality without Codex CLI installed:
+
+```lua
+require('codex').setup({
+  command = 'echo',  -- Just echo instead of running codex
+})
 ```
 
 ---
 
 **Happy debugging!** 🎉
 
-Pokud najdeš nějaký bug, otevři issue na: https://github.com/JanSmrcka/codex.nvim/issues
+If you find any bugs, please open an issue: https://github.com/JanSmrcka/codex.nvim/issues

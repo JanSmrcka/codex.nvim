@@ -1,28 +1,28 @@
 #!/bin/bash
 # Development setup script for codex.nvim
-# Nastaví lokální development environment
+# Sets up local development environment
 
 set -e
 
 echo "🔧 Codex.nvim Development Setup"
 echo "================================"
 
-# Zjisti adresář pluginu
+# Detect plugin directory
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "📁 Plugin directory: $PLUGIN_DIR"
 
-# Vytvoř Neovim dev config
+# Create Neovim dev config
 DEV_CONFIG_DIR="$HOME/.config/nvim-codex-dev"
 mkdir -p "$DEV_CONFIG_DIR"
 
 cat > "$DEV_CONFIG_DIR/init.lua" << EOF
 -- Codex.nvim Development Config
--- Použij tento config pro vývoj: nvim -u ~/.config/nvim-codex-dev/init.lua
+-- Use this config for development: nvim -u ~/.config/nvim-codex-dev/init.lua
 
--- Přidej lokální plugin do runtimepath
+-- Add local plugin to runtimepath
 vim.opt.runtimepath:prepend('$PLUGIN_DIR')
 
--- Základní Neovim nastavení
+-- Basic Neovim settings
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = 'a'
@@ -30,16 +30,16 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.autoread = true
 
--- Setup codex.nvim s debug konfigurací
+-- Setup codex.nvim with debug configuration
 require('codex').setup({
   window = {
-    position = 'botright',
-    split_ratio = 0.3,
+    position = 'botright vertical',
+    split_ratio = 0.4,
     enter_insert = true,
   },
   refresh = {
     enable = true,
-    show_notifications = true,  -- Zapni pro debugging
+    show_notifications = true,  -- Enable for debugging
   },
   git = {
     multi_instance = true,
@@ -52,7 +52,7 @@ require('codex').setup({
   },
 })
 
--- Reload command pro rychlý vývoj
+-- Reload command for quick development
 vim.api.nvim_create_user_command('CodexReload', function()
   for name, _ in pairs(package.loaded) do
     if name:match('^codex') then
@@ -87,32 +87,32 @@ print('📁 Plugin: $PLUGIN_DIR')
 EOF
 
 echo ""
-echo "✅ Development config vytvořen!"
+echo "✅ Development config created!"
 echo ""
-echo "🚀 Jak začít:"
+echo "🚀 How to start:"
 echo ""
-echo "1. Spusť Neovim s dev configem:"
+echo "1. Run Neovim with dev config:"
 echo "   nvim -u ~/.config/nvim-codex-dev/init.lua"
 echo ""
-echo "2. Nebo přidej alias do ~/.zshrc nebo ~/.bashrc:"
+echo "2. Or add alias to ~/.zshrc or ~/.bashrc:"
 echo "   alias nvim-dev='nvim -u ~/.config/nvim-codex-dev/init.lua'"
 echo ""
-echo "3. Testuj plugin:"
-echo "   - Stiskni <C-,> pro toggle Codex"
-echo "   - Spusť :CodexDebug pro debug info"
-echo "   - Po změnách v kódu: :CodexReload"
+echo "3. Test the plugin:"
+echo "   - Press <C-,> to toggle Codex"
+echo "   - Run :CodexDebug for debug info"
+echo "   - After code changes: :CodexReload"
 echo ""
-echo "📖 Více info: cat DEVELOPMENT.md"
+echo "📖 More info: cat DEVELOPMENT.md"
 echo ""
 
-# Vytvoř také alias snippet
+# Create alias snippet
 cat > "$DEV_CONFIG_DIR/alias.sh" << 'EOF'
-# Přidej do ~/.zshrc nebo ~/.bashrc:
+# Add to ~/.zshrc or ~/.bashrc:
 alias nvim-dev='nvim -u ~/.config/nvim-codex-dev/init.lua'
-alias codex-dev='cd ~/git/private/codex.nvim && nvim-dev'
+alias codex-dev='cd $(git rev-parse --show-toplevel) && nvim-dev'
 EOF
 
-echo "💡 Tip: Pro přidání aliasů spusť:"
+echo "💡 Tip: To add aliases run:"
 echo "   cat ~/.config/nvim-codex-dev/alias.sh >> ~/.zshrc"
 echo "   source ~/.zshrc"
 echo ""
