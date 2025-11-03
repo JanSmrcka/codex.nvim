@@ -1,0 +1,28 @@
+# Lua
+*.lua~
+*.luac
+
+# Neovim
+.nvim/
+.neoconf.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Test output
+test_results/
+
+# Temporary files
+*.tmp
+.temp/
