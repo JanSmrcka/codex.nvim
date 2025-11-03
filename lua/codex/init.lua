@@ -29,4 +29,14 @@ function M.is_enabled()
   return config.enabled
 end
 
+-- Enable the plugin
+function M.enable()
+  config.enabled = true
+end
+
+-- Disable the plugin
+function M.disable()
+  config.enabled = false
+end
+
 return M

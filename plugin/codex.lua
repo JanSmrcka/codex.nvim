@@ -7,12 +7,12 @@ vim.g.loaded_codex = true
 
 -- Create user commands
 vim.api.nvim_create_user_command("CodexEnable", function()
-  require("codex").setup({ enabled = true })
+  require("codex").enable()
   print("codex.nvim enabled")
 end, { desc = "Enable codex.nvim plugin" })
 
 vim.api.nvim_create_user_command("CodexDisable", function()
-  require("codex").setup({ enabled = false })
+  require("codex").disable()
   print("codex.nvim disabled")
 end, { desc = "Disable codex.nvim plugin" })
 
