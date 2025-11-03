@@ -52,7 +52,7 @@ INSTALLATION                                              *codex-installation*
 Using lazy.nvim:~
 >lua
     {
-      'yourusername/codex.nvim',
+      'JanSmrcka/codex.nvim',
       config = function()
         require('codex').setup({
           -- your configuration here (optional)
@@ -64,7 +64,7 @@ Using lazy.nvim:~
 Using packer.nvim:~
 >lua
     use {
-      'yourusername/codex.nvim',
+      'JanSmrcka/codex.nvim',
       config = function()
         require('codex').setup()
       end
@@ -73,7 +73,7 @@ Using packer.nvim:~
 
 Manual installation:~
 >bash
-    git clone https://github.com/yourusername/codex.nvim.git \
+    git clone https://github.com/JanSmrcka/codex.nvim.git \
       ~/.local/share/nvim/site/pack/plugins/start/codex.nvim
 <
 
@@ -511,8 +511,8 @@ ABOUT                                                            *codex-about*
 codex.nvim is inspired by and based on the architecture of claude-code.nvim,
 adapted for OpenAI's Codex CLI.
 
-Repository: https://github.com/yourusername/codex.nvim
-Issues: https://github.com/yourusername/codex.nvim/issues
+Repository: https://github.com/JanSmrcka/codex.nvim
+Issues: https://github.com/JanSmrcka/codex.nvim/issues
 License: MIT
 
 Acknowledgments:~

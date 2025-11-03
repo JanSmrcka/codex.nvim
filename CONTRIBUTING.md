@@ -42,7 +42,7 @@ Enhancement suggestions are welcome! Please:
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/codex.nvim.git
+git clone https://github.com/JanSmrcka/codex.nvim.git
 cd codex.nvim
 
 # Create a branch for your changes

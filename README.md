@@ -35,7 +35,7 @@
 
 ```lua
 {
-  'yourusername/codex.nvim',
+  'JanSmrcka/codex.nvim',
   config = function()
     require('codex').setup({
       -- your configuration here (optional)
@@ -48,7 +48,7 @@
 
 ```lua
 use {
-  'yourusername/codex.nvim',
+  'JanSmrcka/codex.nvim',
   config = function()
     require('codex').setup()
   end
@@ -58,7 +58,7 @@ use {
 ### Manual Installation
 
 ```bash
-git clone https://github.com/yourusername/codex.nvim.git \
+git clone https://github.com/JanSmrcka/codex.nvim.git \
   ~/.local/share/nvim/site/pack/plugins/start/codex.nvim
 ```
 
@@ -381,7 +381,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ### Development Setup
 
 ```bash
-git clone https://github.com/yourusername/codex.nvim.git
+git clone https://github.com/JanSmrcka/codex.nvim.git
 cd codex.nvim
 
 # Test locally
@@ -412,7 +412,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 <div align="center">
 
-**[Documentation](doc/codex.txt)** • **[Issues](https://github.com/yourusername/codex.nvim/issues)** • **[Discussions](https://github.com/yourusername/codex.nvim/discussions)**
+**[Documentation](doc/codex.txt)** • **[Issues](https://github.com/JanSmrcka/codex.nvim/issues)** • **[Discussions](https://github.com/JanSmrcka/codex.nvim/discussions)**
 
 Made with ❤️ for the Neovim community
 
