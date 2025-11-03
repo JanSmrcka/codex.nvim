@@ -1,0 +1,524 @@
+*codex.txt*  Integration with OpenAI Codex CLI for Neovim
+
+Author: codex.nvim contributors
+License: MIT
+Version: 0.1.0
+
+==============================================================================
+CONTENTS                                                      *codex-contents*
+
+1. Introduction ........................... |codex-introduction|
+2. Requirements ........................... |codex-requirements|
+3. Installation ........................... |codex-installation|
+4. Quick Start ............................ |codex-quickstart|
+5. Configuration .......................... |codex-configuration|
+6. Commands ............................... |codex-commands|
+7. Mappings ............................... |codex-mappings|
+8. Functions .............................. |codex-functions|
+9. Multi-Instance ......................... |codex-multi-instance|
+10. Context Sending ....................... |codex-context|
+11. MCP Integration ....................... |codex-mcp|
+12. Troubleshooting ....................... |codex-troubleshooting|
+13. About ................................. |codex-about|
+
+==============================================================================
+INTRODUCTION                                              *codex-introduction*
+
+codex.nvim provides seamless integration between OpenAI's Codex CLI and
+Neovim, enabling AI-assisted development directly within your editor.
+
+Features:~
+- Toggle Codex terminal with configurable windows (split/float)
+- Multi-instance support (one per git repository)
+- Automatic file change detection and reloading
+- Send buffers, selections, and files to Codex
+- Exec mode for non-interactive tasks
+- MCP (Model Context Protocol) integration
+- Full keyboard navigation support
+
+==============================================================================
+REQUIREMENTS                                              *codex-requirements*
+
+- Neovim >= 0.8.0
+- Codex CLI installed and configured
+  - Install via npm: `npm install -g @openai/codex`
+  - Or via Homebrew: `brew install --cask codex`
+- Git (optional, for multi-instance support)
+- ChatGPT Plus/Pro/Team/Enterprise subscription (for Codex access)
+
+==============================================================================
+INSTALLATION                                              *codex-installation*
+
+Using lazy.nvim:~
+>lua
+    {
+      'yourusername/codex.nvim',
+      config = function()
+        require('codex').setup({
+          -- your configuration here (optional)
+        })
+      end,
+    }
+<
+
+Using packer.nvim:~
+>lua
+    use {
+      'yourusername/codex.nvim',
+      config = function()
+        require('codex').setup()
+      end
+    }
+<
+
+Manual installation:~
+>bash
+    git clone https://github.com/yourusername/codex.nvim.git \
+      ~/.local/share/nvim/site/pack/plugins/start/codex.nvim
+<
+
+==============================================================================
+QUICK START                                                  *codex-quickstart*
+
+Minimal configuration:~
+>lua
+    require('codex').setup()
+<
+
+Then use `<C-,>` to toggle the Codex terminal, or run |:Codex|.
+
+Recommended configuration:~
+>lua
+    require('codex').setup({
+      window = {
+        position = 'botright',  -- or 'float' for floating window
+        split_ratio = 0.3,
+      },
+      keymaps = {
+        toggle = {
+          normal = '<C-,>',
+          terminal = '<C-,>',
+        },
+        context = {
+          send_buffer = '<leader>cb',
+          send_selection = '<leader>cs',
+        },
+      },
+    })
+<
+
+==============================================================================
+CONFIGURATION                                            *codex-configuration*
+
+Window Configuration~
+                                                          *codex-config-window*
+>lua
+    window = {
+      split_ratio = 0.3,              -- Size of split (0.0-1.0)
+      position = 'botright',          -- 'botright', 'topleft', 'vertical', 'float'
+      enter_insert = true,            -- Enter insert mode when opening
+      start_in_normal_mode = false,   -- Override enter_insert
+      hide_numbers = true,            -- Hide line numbers
+      hide_signcolumn = true,         -- Hide sign column
+
+      float = {
+        width = '80%',                -- Width (number or percentage)
+        height = '80%',               -- Height
+        row = 'center',               -- Row position
+        col = 'center',               -- Column position
+        border = 'rounded',           -- Border style
+        relative = 'editor',          -- Relative to 'editor' or 'cursor'
+      },
+    }
+<
+
+File Refresh Configuration~
+                                                         *codex-config-refresh*
+>lua
+    refresh = {
+      enable = true,                  -- Enable file monitoring
+      updatetime = 100,               -- Vim updatetime while active (ms)
+      timer_interval = 1000,          -- Polling interval (ms)
+      show_notifications = false,     -- Notify on file changes
+    }
+<
+
+Git Integration~
+                                                             *codex-config-git*
+>lua
+    git = {
+      use_git_root = true,            -- Use git root as cwd
+      multi_instance = true,          -- One instance per repo
+    }
+<
+
+Context Management~
+                                                         *codex-config-context*
+>lua
+    context = {
+      method = 'stdin',               -- 'stdin', 'clipboard', 'file'
+      auto_send_on_open = false,      -- Auto-send buffer on open
+      include_filepath = true,        -- Include filepath in context
+      max_lines = 10000,              -- Max lines to send
+    }
+<
+
+MCP Integration~
+                                                             *codex-config-mcp*
+>lua
+    mcp = {
+      enable = false,                 -- Enable MCP
+      config_path = nil,              -- Custom config path
+      show_status = true,             -- Show MCP status
+    }
+<
+
+Keyboard Mappings~
+                                                         *codex-config-keymaps*
+>lua
+    keymaps = {
+      toggle = {
+        normal = '<C-,>',
+        terminal = '<C-,>',
+        variants = {
+          continue = '<leader>cc',
+          resume = '<leader>cr',
+          verbose = '<leader>cv',
+          exec = '<leader>cx',
+        },
+      },
+      context = {
+        send_buffer = '<leader>cb',
+        send_selection = '<leader>cs',
+      },
+      window_navigation = {
+        enable = true,
+        left = '<C-h>',
+        down = '<C-j>',
+        up = '<C-k>',
+        right = '<C-l>',
+      },
+      scrolling = {
+        enable = true,
+        page_up = '<C-b>',
+        page_down = '<C-f>',
+      },
+    }
+<
+
+==============================================================================
+COMMANDS                                                      *codex-commands*
+
+:Codex                                                                 *:Codex*
+    Toggle Codex terminal. Creates a new instance if none exists for the
+    current git repository (if multi-instance is enabled).
+
+:CodexContinue                                                 *:CodexContinue*
+    Toggle Codex with `--continue` flag. Useful for resuming conversations.
+
+:CodexResume                                                     *:CodexResume*
+    Toggle Codex with `--resume` flag.
+
+:CodexVerbose                                                   *:CodexVerbose*
+    Toggle Codex with `--verbose` flag for detailed output.
+
+:CodexExec [prompt]                                                *:CodexExec*
+    Execute Codex in non-interactive mode with the given prompt. If no
+    prompt is provided, you will be prompted to enter one.
+
+    Example: >
+        :CodexExec Fix all TypeScript errors in this file
+<
+
+:CodexSendBuffer                                             *:CodexSendBuffer*
+    Send the current buffer's content to the active Codex instance.
+
+:CodexSendSelection                                       *:CodexSendSelection*
+    Send the visual selection to the active Codex instance.
+
+:CodexSendFile {path}                                         *:CodexSendFile*
+    Send a specific file's content to the active Codex instance.
+
+    Example: >
+        :CodexSendFile ~/.config/nvim/init.lua
+<
+
+:CodexVersion                                                   *:CodexVersion*
+    Display the current version of codex.nvim.
+
+:CodexMcpList                                                   *:CodexMcpList*
+    List all configured MCP servers (if MCP integration is enabled).
+
+:CodexMcpInfo {server}                                         *:CodexMcpInfo*
+    Show detailed information about a specific MCP server.
+
+:CodexDebug                                                       *:CodexDebug*
+    Show debug information about the plugin state (useful for troubleshooting).
+
+==============================================================================
+MAPPINGS                                                      *codex-mappings*
+
+Default mappings (configurable):
+
+Normal mode:~
+    <C-,>         Toggle Codex terminal
+    <leader>cc    Codex continue
+    <leader>cr    Codex resume
+    <leader>cv    Codex verbose
+    <leader>cx    Codex exec
+    <leader>cb    Send buffer to Codex
+
+Visual mode:~
+    <leader>cs    Send selection to Codex
+
+Terminal mode:~
+    <C-,>         Toggle Codex terminal
+    <C-h>         Move to left window
+    <C-j>         Move to below window
+    <C-k>         Move to above window
+    <C-l>         Move to right window
+    <C-b>         Scroll page up
+    <C-f>         Scroll page down
+
+All mappings can be customized in the configuration. Set to `false` to
+disable a specific mapping.
+
+==============================================================================
+FUNCTIONS                                                    *codex-functions*
+
+require('codex').setup({config})                              *codex.setup()*
+    Initialize the plugin with the given configuration. Must be called
+    before using any other functions.
+
+    Parameters:~
+        {config}  Optional configuration table
+
+require('codex').toggle()                                     *codex.toggle()*
+    Toggle the Codex terminal for the current context.
+
+require('codex').toggle_with_variant({variant})  *codex.toggle_with_variant()*
+    Toggle Codex with a specific variant.
+
+    Parameters:~
+        {variant}  Variant name ('continue', 'resume', 'verbose', 'exec')
+
+require('codex').exec({prompt})                                 *codex.exec()*
+    Execute a non-interactive Codex command.
+
+    Parameters:~
+        {prompt}  Optional command prompt
+
+require('codex').send_buffer()                           *codex.send_buffer()*
+    Send the current buffer to Codex.
+
+require('codex').send_selection()                     *codex.send_selection()*
+    Send the visual selection to Codex.
+
+require('codex').send_file({filepath})                     *codex.send_file()*
+    Send a specific file to Codex.
+
+    Parameters:~
+        {filepath}  Path to the file
+
+require('codex').get_version()                           *codex.get_version()*
+    Get the plugin version string.
+
+    Returns:~
+        Version string (e.g., "0.1.0")
+
+require('codex').get_instances()                       *codex.get_instances()*
+    Get information about all active Codex instances.
+
+    Returns:~
+        Array of instance information tables
+
+require('codex').close_instance({id})                 *codex.close_instance()*
+    Close a specific Codex instance.
+
+    Parameters:~
+        {id}  Instance identifier (usually git root path)
+
+require('codex').close_all_instances()           *codex.close_all_instances()*
+    Close all active Codex instances.
+
+==============================================================================
+MULTI-INSTANCE                                          *codex-multi-instance*
+
+When `git.multi_instance` is enabled (default), codex.nvim maintains separate
+Codex instances for each git repository. This allows you to:
+
+- Work on multiple projects simultaneously
+- Keep separate conversation contexts per project
+- Automatically switch to the correct instance based on current file
+
+How it works:~
+1. When you toggle Codex, the plugin detects the git root of your current
+   file or working directory.
+2. If an instance already exists for that git root, it's toggled.
+3. If not, a new instance is created and starts in that git root.
+
+Example workflow:~
+>
+    # Project A
+    cd ~/projects/project-a
+    nvim src/main.lua
+    # Press <C-,> - Opens Codex instance for project-a
+
+    # Project B (in another terminal/window)
+    cd ~/projects/project-b
+    nvim app.js
+    # Press <C-,> - Opens separate Codex instance for project-b
+<
+
+To disable multi-instance mode:~
+>lua
+    require('codex').setup({
+      git = {
+        multi_instance = false,
+      },
+    })
+<
+
+==============================================================================
+CONTEXT SENDING                                                *codex-context*
+
+codex.nvim allows you to send code context to Codex for better assistance.
+
+Methods:~
+
+Buffer~
+    Send the entire current buffer:
+    >
+        :CodexSendBuffer
+        " or
+        <leader>cb  (in normal mode)
+<
+
+Selection~
+    Select code in visual mode and send it:
+    >
+        (visual mode)
+        <leader>cs
+<
+
+File~
+    Send a specific file:
+    >
+        :CodexSendFile path/to/file.lua
+<
+
+Configuration:~
+>lua
+    context = {
+      method = 'stdin',           -- How to send: 'stdin', 'clipboard', 'file'
+      include_filepath = true,    -- Include filename in sent context
+      max_lines = 10000,          -- Maximum lines to send
+    }
+<
+
+Send methods:~
+- `stdin`: Directly paste into terminal (default)
+- `clipboard`: Copy to clipboard, user manually pastes
+- `file`: Create temp file and cat it
+
+==============================================================================
+MCP INTEGRATION                                                    *codex-mcp*
+
+Model Context Protocol (MCP) integration extends Codex with additional
+capabilities through MCP servers.
+
+Enable MCP:~
+>lua
+    require('codex').setup({
+      mcp = {
+        enable = true,
+        config_path = '~/.codex/config.toml',  -- Optional
+        show_status = true,
+      },
+    })
+<
+
+MCP configuration file (TOML):~
+>toml
+    [mcp.servers.filesystem]
+    enabled = true
+    path = "/usr/local/bin/mcp-server-filesystem"
+
+    [mcp.servers.github]
+    enabled = true
+    path = "/usr/local/bin/mcp-server-github"
+<
+
+Commands:~
+    :CodexMcpList                List all MCP servers
+    :CodexMcpInfo {server}       Show server details
+
+==============================================================================
+TROUBLESHOOTING                                        *codex-troubleshooting*
+
+Codex command not found~
+    Ensure Codex CLI is installed and in your PATH:
+    >
+        $ codex --version
+<
+    If not installed:
+    >
+        $ npm install -g @openai/codex
+        # or
+        $ brew install --cask codex
+<
+
+Files not auto-reloading~
+    Ensure `autoread` is enabled:
+    >lua
+        vim.opt.autoread = true
+<
+
+Terminal not opening~
+    Check Neovim version (must be >= 0.8.0):
+    >
+        :version
+<
+
+Keymaps not working~
+    Check for conflicting keymaps:
+    >
+        :verbose map <C-,>
+<
+
+Debug information~
+    Get detailed debug info:
+    >
+        :CodexDebug
+<
+
+Enable verbose logging~
+    >lua
+        require('codex').setup({
+          command_variants = {
+            verbose = {
+              enabled = true,
+              flags = '--verbose',
+            },
+          },
+        })
+<
+    Then use `:CodexVerbose` to see detailed output.
+
+==============================================================================
+ABOUT                                                            *codex-about*
+
+codex.nvim is inspired by and based on the architecture of claude-code.nvim,
+adapted for OpenAI's Codex CLI.
+
+Repository: https://github.com/yourusername/codex.nvim
+Issues: https://github.com/yourusername/codex.nvim/issues
+License: MIT
+
+Acknowledgments:~
+- claude-code.nvim for the architectural inspiration
+- Codex CLI by OpenAI
+- The Neovim community
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
