@@ -5,7 +5,7 @@ function M.check()
   
   -- Check if Neovim version is compatible
   local nvim_version = vim.version()
-  if nvim_version.minor >= 9 then
+  if vim.version.cmp(nvim_version, {0, 9, 0}) >= 0 then
     vim.health.ok("Neovim version is compatible (>= 0.9.0)")
   else
     vim.health.warn("Neovim version is older than 0.9.0. Some features may not work correctly.")
