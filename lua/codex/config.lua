@@ -7,8 +7,8 @@ local M = {}
 M.default_config = {
   -- Terminal window configuration
   window = {
-    split_ratio = 0.3, -- Size of split (0.0-1.0)
-    position = 'botright', -- 'botright', 'topleft', 'vertical', 'float'
+    split_ratio = 0.4, -- Size of split (0.0-1.0)
+    position = 'botright vertical', -- 'botright', 'topleft', 'vertical', 'botright vertical', 'float'
     enter_insert = true, -- Enter insert mode when opening
     start_in_normal_mode = false, -- Start in normal mode instead
     hide_numbers = true, -- Hide line numbers in terminal
@@ -127,9 +127,24 @@ local function validate_window_config(config)
     return false, 'window.split_ratio must be between 0 and 1'
   end
 
-  local valid_positions = { 'botright', 'topleft', 'vertical', 'float' }
-  if not vim.tbl_contains(valid_positions, config.window.position) then
-    return false, 'window.position must be one of: ' .. table.concat(valid_positions, ', ')
+  -- Validate position (support combinations like 'botright vertical')
+  local position = config.window.position
+  if type(position) ~= 'string' then
+    return false, 'window.position must be a string'
+  end
+
+  -- Check if position contains valid keywords
+  local valid_keywords = { 'botright', 'topleft', 'vertical', 'float' }
+  local has_valid_keyword = false
+  for _, keyword in ipairs(valid_keywords) do
+    if position:match(keyword) then
+      has_valid_keyword = true
+      break
+    end
+  end
+
+  if not has_valid_keyword then
+    return false, 'window.position must contain one of: ' .. table.concat(valid_keywords, ', ')
   end
 
   return true
