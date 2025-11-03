@@ -55,9 +55,11 @@ function M.exec(codex_state, config, prompt)
 
   -- Create temporary buffer for output
   local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
-  vim.api.nvim_buf_set_option(bufnr, 'bufhidden', 'wipe')
   vim.api.nvim_buf_set_name(bufnr, 'codex-exec-' .. os.time())
+
+  -- Set buffer options (using new API)
+  vim.bo[bufnr].buftype = 'nofile'
+  vim.bo[bufnr].bufhidden = 'wipe'
 
   -- Open in split
   vim.cmd('botright split')
@@ -101,7 +103,9 @@ function M.is_valid_terminal_buffer(bufnr)
     return false
   end
 
-  local ok, buftype = pcall(vim.api.nvim_buf_get_option, bufnr, 'buftype')
+  local ok, buftype = pcall(function()
+    return vim.bo[bufnr].buftype
+  end)
   if not ok or buftype ~= 'terminal' then
     return false
   end
@@ -146,13 +150,12 @@ function M.create_new_instance(codex_state, config, instance_id)
   -- Create buffer
   local bufnr = vim.api.nvim_create_buf(false, true)
 
-  -- Set buffer options
-  vim.api.nvim_buf_set_option(bufnr, 'buftype', 'terminal')
-  vim.api.nvim_buf_set_option(bufnr, 'buflisted', false)
-
   -- Set buffer name
   local safe_instance_id = instance_id:gsub('[/\\:]', '-')
   vim.api.nvim_buf_set_name(bufnr, 'codex-' .. safe_instance_id)
+
+  -- Set buffer options (using new API)
+  vim.bo[bufnr].buflisted = false
 
   -- Open window
   M.open_terminal_window(bufnr, config)
@@ -160,7 +163,7 @@ function M.create_new_instance(codex_state, config, instance_id)
   -- Build command
   local cmd = M.build_command_with_git_root(config, instance_id)
 
-  -- Start terminal
+  -- Start terminal (this automatically sets buftype to 'terminal')
   local job_id = vim.fn.termopen(cmd, {
     on_exit = function(_, exit_code, _)
       -- Clean up instance on exit
@@ -319,12 +322,12 @@ end
 -- @param config table The plugin configuration
 function M.configure_window_options(win_id, config)
   if config.window.hide_numbers then
-    vim.api.nvim_set_option_value('number', false, { win = win_id })
-    vim.api.nvim_set_option_value('relativenumber', false, { win = win_id })
+    vim.wo[win_id].number = false
+    vim.wo[win_id].relativenumber = false
   end
 
   if config.window.hide_signcolumn then
-    vim.api.nvim_set_option_value('signcolumn', 'no', { win = win_id })
+    vim.wo[win_id].signcolumn = 'no'
   end
 end
 
