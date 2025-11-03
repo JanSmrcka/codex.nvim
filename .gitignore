@@ -1,0 +1,14 @@
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Neovim temporary files
+*.tmp
+
+# Documentation generated files
+doc/tags
+
+# Testing
+.tests/
