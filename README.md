@@ -402,12 +402,6 @@ This plugin is inspired by and based on the architecture of [claude-code.nvim](h
 
 MIT License - see [LICENSE](LICENSE) file for details
 
-## 🙏 Acknowledgments
-
-- [claude-code.nvim](https://github.com/anthropics/claude-code.nvim) for the architectural inspiration
-- [Codex CLI](https://github.com/openai/codex) by OpenAI
-- The Neovim community for excellent documentation and support
-
 ---
 
 <div align="center">
